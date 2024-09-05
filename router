@@ -1,0 +1,20 @@
+router
+Домен :
+Linux:
+
+hostnamectl set-hostname ИМЯ.ДОМЕН
+
+
+EcoRouter:
+
+enable
+configure terminal
+hostname ИМЯ
+ip domain-name ДОМЕН
+
+vESR:
+
+configure
+hostname ИМЯ
+domain name ДОМЕН
+
