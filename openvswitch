@@ -1,0 +1,220 @@
+##############################
+##Red os
+
+nmtui
+Изменить подключение -> Добавить - > Vlan
+
+Имя профиля : vlan330
+Устройство : vlan330
+
+Родительский : ens6s18
+Идентификатор VLAN :330
+
+Адреса : 192,168,33,66/29
+шлюз : 192.168.33.65
+Серверы DNS 77.88.8.8
+
+OK
+
+
+Установка OpenvSwitch
+
+dnf install openvswitch
+dnf install NetworkManager-ovs
+
+
+Удаляем временный интерфейс (в нашем случае vlan330)
+
+nmtui
+Изменить подключение -> Удалить - >vlan330
+
+
+####################################
+##altlinux
+
+mkdir /etc/net/ifaces/enp6s18.330
+vim /etc/net/ifaces/enp6s18.330/options
+
+TYPE=vlan
+HOST=enp6s18
+VID=330
+BOOTPROTO=static
+
+echo 192.168.11.82/29 > /etc/net/ifaces/enp6s18.330/ipv4address 
+echo default via 192.168.11.81 > /etc/net/ifaces/enp6s18.330/ipv4route
+echo nameserver 77.88.8.8 > /etc/net/ifaces/enp6s18.330/resolv.conf
+
+systemctl restart network
+
+
+
+#Обновляем репозитории
+
+apt-get update
+
+#Устанавливаем и настраиваем openvswitch
+
+apt-get install openvswitch
+
+#Удаляем временный интерфейс
+
+rm -rf /etc/net/iface/enp6s18.330
+reboot
+
+systemctl enable --now openvswitch
+systemctl status openvswitch
+
+#########################################################################################################################################################
+
+#openvstitch
+systemctl enable --now openvswitch                Включаем и добавляем OpenvSwitch в автозагрузку
+systemctl status openvswitch                    Проверяем работоспособность OpenvSwitch
+ovs-vsctl show                                      Вывод информации о системе коммутации
+ovs-vsctl add-br <ИМЯ SW>                              Добавление виртуального коммутатора. Автоматически создается интерфейс с аналогичным именем
+ovs-vsctl add-port <ИМЯ SW> <ИМЯ ПОРТА>                  Добавление порта в коммутатор (порт должен быть включен)
+ovs-vsctl add-port <ИМЯ SW> <ИМЯ ВИРТУАЛЬНОГО ПОРТА>            Добавление виртуального порта в коммутатор (выйдет ошибка, что нет такого порта)
+ovs-vsctl set Interface <ИМЯ ВИРТУАЛЬНОГО ПОРТА> type=internal    Устанавливаем виртуальному порту тип internal
+ovs-vsctl set Port <ИМЯ ПОРТА> tag=<НОМЕР VLAN>                    Установить на данном порту номер VLAN
+ovs-vsctl set Port <ИМЯ ПОРТА> trunks=<VLAN1>,<VLAN2>              Установить на данном порту параметры trunk
+ovs-appctl stp/show                                                    Вывод информации о службе STP
+ovs-vsctl set Bridge <ИМЯ SW> stp_enable=yes                      Активация STP
+ovs-vsctl set Bridge <ИМЯ SW> other_config:stp-priority=<ПРИОРИТЕТ>    Установка приоритета в STP
+
+ВНИМАНИЕ!
+Команды приведенные ниже устанавливает IP адрес для <ВИРТУАЛЬНОГО ПОРТА> до перезагрузки
+ip link set <ИМЯ ВИРТУАЛЬНОГО ПОРТА> up                                              Включение виртуального порта
+ip address add <IP АДРЕС ВИРТУАЛЬНОГО ПОРТА> dev <ИМЯ ВИРТУАЛЬНОГО ПОРТА>        Присвоение адреса виртуальному порту
+ip route add default via <АДРЕС ШЛЮЗА>                                          Указание шлюза по умолчанию
+
+
+  
+#########################################################################
+##Redos
+#Настройка OpenvSwitch с помощью NetworkManager
+
+nmcli c add type ovs-bridge conn.interface <ИМЯ SW> con-name <ИМЯ SW>
+nmcli c add type ovs-port conn.interface <ИМЯ SW> master <ИМЯ SW> con-name ovs-port- <ИМЯ SW>
+nmcli c add type ovs-interface slave-type ovs-port conn.interface <ИМЯ SW> master ovs-port- <ИМЯ SW> con-name ovs-if- <ИМЯ SW>
+
+nmcli c add type ovs-port conn.interface <ПОРТ> master <ИМЯ SW> ovs-port.trunks <VLAN1>,<VLAN2> con-name ovs-port-<ПОРТ>
+nmcli c add type ethernet conn.interface <ПОРТ> master ovs-port-<ПОРТ> con-name ovs-if-<ПОРТ>
+
+nmcli c add type ovs-port conn.interface <ПОРТ> master <ИМЯ SW> ovs-port.tag <НОМЕР VLAN> con-name ovs-port-<ПОРТ>
+nmcli c add type ethernet conn.interface <ПОРТ> master ovs-port-<ПОРТ> con-name ovs-if-<ПОРТ>
+
+nmcli c add type ovs-port conn.interface <ВИРТ ПОРТ> master <ИМЯ SW> ovs-port.tag <НОМЕР VLAN> con-name ovs-port-<ВИРТ ПОРТ>
+nmcli c add type ovs-interface slave-type ovs-port conn.interface <ВИРТ ПОРТ> master ovs-port-mgmt con-name ovs-if- <ВИРТ ПОРТ> ipv4.method static ipv4.address <IP АДРЕС ВИРТ ПОРТА> ipv4.gateway <АДРЕС ШЛЮЗА>
+
+https://blog.oddbit.com/post/2020-02-15-configuring-open-vswitch-with/
+
+
+########################################################################
+#altlicnus
+##Настройка OpenvSwitch с помощью Etcnet (на примере SW1-HQ)
+ip address                                                  Смотрим название интерфейсов (в нашем случае enp6s18, enp6s19, enp6s20)
+cp -r /etc/net/ifaces/enp6s18 /etc/net/ifaces/enp6s19          Копируем конфигурационный файл для интерфейса enp6s19 на базе интерфейса enp6s18
+cp -r /etc/net/ifaces/enp6s18 /etc/net/ifaces/enp6s20          Копируем конфигурационный файл для интерфейса enp6s20 на базе интерфейса enp6s18
+mkdir /etc/net/ifaces/SW1-HQ                                  Создаем каталог для мостового интерфейса с именем коммутатора SW1-HQ
+mkdir /etc/net/ifaces/mgmt                    Создаем каталог для management интерфейса с именем mgmt.
+
+https://www.altlinux.org/Etcnet/openvswitch
+
+
+#
+#Настройка OpenvSwitch с помощью Etcnet (на примере SW1-HQ)
+
+vim /etc/net/ifaces/SW1-HQ/options
+ 
+TYPE=ovsbr
+HOST='enp6s18 enp6s19 enp6s20'
+OVS_OPTIONS=’stp_enable=yes other_config:stp-priority=4096’
+OVS_EXTRA=’set port enp6s18 trunk=110,220,330 -- set port enp6s19 trunk=110,220,330 -- set port enp6s20 trunk=110,220,330’
+
+'''  Создаем конфигурационный файл для мостового интерфейса
+ 
+    TYPE – тип интерфейса
+    HOST – интерфейсы, которые будут добавлены к коммутатор
+    OVS_OPTIONS – параметры, которые должны быть переданы для настройки коммутатора (указываются через пробел)
+    OVS_EXTRA параметры, которые нужно настраивать через Database Commands (см. команды в ovs-vsctl). Например влан, тип и т.д.
+'''
+
+
+
+vim /etc/net/ifaces/mgmt/options
+ 
+TYPE=ovsport
+BOOTPROTO=static
+CONFIG_IPV4=yes
+BRIDGE=SW1-HQ
+VID=330
+
+
+'''Создаем конфигурационный файл для management интерфейса
+  TYPE – тип интерфейса
+  BOOTPROTO – определяет как будут назначаться сетевые параметры
+  CONFIG_IPV4 – определяем использовать конфигурацию протокола IPv4
+  BRIDGE – определяет к какому мосту (коммутатору) необходимо добавить интерфейс
+  VID – определяет принадлежность интерфейса к VLAN
+'''
+
+echo 192.168.11.82/29 > /etc/net/ifaces/mgmt/ipv4address              Назначаем IP адрес на интерфейсе mgmt
+echo default via 192.168.11.81 > /etc/net/ifaces/mgmt/ipv4route        Назначаем шлюз на интерфейсе mgmt
+echo nameserver 77.88.8.8 > /etc/net/ifaces/mgmt/resolv.conf          Назначаем адрес DNS сервера на интерфейсе mgmt
+systemctl restart network                                          Перезагрузка службы сети
+ovs-vsctl show                                                    Вывод информации о системе коммутации
+ovs-appctl stp/show                                                Вывод информации о службе STP
+
+
+
+
+Настройка сети на RedOS:
+
+https://redos.red-soft.ru/base/manual/redos-manual/network/network-settings/
+
+Настройка сети на Alt:
+
+https://www.altlinux.org/Настройка_сети
+https://www.altlinux.org/Etcnet
+https://www.youtube.com/watch?v=4FVX6fIdLHo
+
+
+'''  ВНИМАНИЕ! По умолчанию, при использовании Etcnet совместно с командами OpenvSwitch (ovs-vsctl), 
+    все команды  назначенные командой ovs-vsctl удалятся после перезагрузки!
+    Чтобы этого избежать, нужно выполнить команду
+
+      sed -i "s/OVS_REMOVE=yes/OVS_REMOVE=no/g" /etc/net/ifaces/default/options
+'''
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
