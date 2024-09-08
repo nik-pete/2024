@@ -68,23 +68,21 @@ systemctl status openvswitch
 
 #openvstitch
 systemctl enable --now openvswitch                Включаем и добавляем OpenvSwitch в автозагрузку
-systemctl status openvswitch                    Проверяем работоспособность OpenvSwitch
-ovs-vsctl show                                      Вывод информации о системе коммутации
+systemctl status openvswitch                    
+ovs-vsctl show                                      
 ovs-vsctl add-br <ИМЯ SW>                              Добавление виртуального коммутатора. Автоматически создается интерфейс с аналогичным именем
 ovs-vsctl add-port <ИМЯ SW> <ИМЯ ПОРТА>                  Добавление порта в коммутатор (порт должен быть включен)
-ovs-vsctl add-port <ИМЯ SW> <ИМЯ ВИРТУАЛЬНОГО ПОРТА>            Добавление виртуального порта в коммутатор (выйдет ошибка, что нет такого порта)
-ovs-vsctl set Interface <ИМЯ ВИРТУАЛЬНОГО ПОРТА> type=internal    Устанавливаем виртуальному порту тип internal
-ovs-vsctl set Port <ИМЯ ПОРТА> tag=<НОМЕР VLAN>                    Установить на данном порту номер VLAN
-ovs-vsctl set Port <ИМЯ ПОРТА> trunks=<VLAN1>,<VLAN2>              Установить на данном порту параметры trunk
-ovs-appctl stp/show                                                    Вывод информации о службе STP
-ovs-vsctl set Bridge <ИМЯ SW> stp_enable=yes                      Активация STP
-ovs-vsctl set Bridge <ИМЯ SW> other_config:stp-priority=<ПРИОРИТЕТ>    Установка приоритета в STP
+ovs-vsctl add-port <ИМЯ SW> <ИМЯ ВИРТУАЛЬНОГО ПОРТА>           
+ovs-vsctl set Interface <ИМЯ ВИРТУАЛЬНОГО ПОРТА> type=internal    
+ovs-vsctl set Port <ИМЯ ПОРТА> tag=<НОМЕР VLAN>                    
+ovs-vsctl set Port <ИМЯ ПОРТА> trunks=<VLAN1>,<VLAN2>              
+ovs-appctl stp/show                                                    
+ovs-vsctl set Bridge <ИМЯ SW> stp_enable=yes                      
+ovs-vsctl set Bridge <ИМЯ SW> other_config:stp-priority=<ПРИОРИТЕТ>    
 
-ВНИМАНИЕ!
-Команды приведенные ниже устанавливает IP адрес для <ВИРТУАЛЬНОГО ПОРТА> до перезагрузки
-ip link set <ИМЯ ВИРТУАЛЬНОГО ПОРТА> up                                              Включение виртуального порта
-ip address add <IP АДРЕС ВИРТУАЛЬНОГО ПОРТА> dev <ИМЯ ВИРТУАЛЬНОГО ПОРТА>        Присвоение адреса виртуальному порту
-ip route add default via <АДРЕС ШЛЮЗА>                                          Указание шлюза по умолчанию
+ip link set <ИМЯ ВИРТУАЛЬНОГО ПОРТА> up                                             
+ip address add <IP АДРЕС ВИРТУАЛЬНОГО ПОРТА> dev <ИМЯ ВИРТУАЛЬНОГО ПОРТА>        
+ip route add default via <АДРЕС ШЛЮЗА>                                          
 
 
   
