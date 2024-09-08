@@ -21,58 +21,58 @@ domain name ДОМЕН
 ###########################################################
 #Ecorouter
 #Uplink
-r-dt#conf t
-r-dt(config)#interface ISP						    	            	Создаем интерфейс с именем ISP (имя произвольное)
-r-dt(config-if)#ip address 172.16.4.14/28
-r-dt(config-if)#no shutdown
-r-dt(config-if)#exit
+r#conf t
+r(config)#interface Uplink					    	            	Создаем интерфейс с именем ISP (имя произвольное)
+r(config-if)#ip address 172.200.40.102/28
+r(config-if)#no shutdown
+r(config-if)#exit
 
-r-dt(config)#port ge0									                  	Заходим в режим настройки порта
-r-dt(config-port)#service-instance Internet			  	    	Создаем сервисный интерфейс с именем Internet (имя произвольное) 
-r-dt(config-port)#encapsulation untagged				         	Указываем что трафик не тегированный
-r-dt(config-service-instance)#connect ip interface ISP		Указание в какой интерфейс нужно отправить обработанные кадры.r-dt(config-service-instance)#
-r-dt(config-service-instance)#exit
-r-dt(config-service-instance)#exit
+r(config)#port ge0									                  	Заходим в режим настройки порта
+r(config-port)#service-instance Internet			  	    	Создаем сервисный интерфейс с именем Internet (имя произвольное) 
+r(config-port)#encapsulation untagged				         	Указываем что трафик не тегированный
+r(config-service-instance)#connect ip interface uplink		Указание в какой интерфейс нужно отправить обработанные кадры.r-dt(config-service-instance)#
+r(config-service-instance)#exit
+r(config-service-instance)#exit
 
-r-dt(config)#ip route 0.0.0.0/0 172.16.4.1
+r-dt(config)#ip route 0.0.0.0/0 172.200.40.101
 
 
 #downlink
-r-dt(config)#interface v110							                     Создаем интерфейс с именем v110 (имя произвольное)
-r-dt(config-if)#ip address 192.168.33.1/26
-r-dt(config-if)#no shutdown
-r-dt(config-if)#exit
-r-dt(config)#interface v330
-r-dt(config-if)#ip address 192.168.33.65/29
-r-dt(config-if)#no shutdown
-r-dt(config-if)#exit
+r(config)#interface v11						                     Создаем интерфейс с именем v110 (имя произвольное)
+r(config-if)#ip address 192.168.3.1/26
+r(config-if)#no shutdown
+r(config-if)#exit
+r(config)#interface v33
+r(config-if)#ip address 192.168.3.65/29
+r(config-if)#no shutdown
+r(config-if)#exit
 
 
-r-dt(config)#port ge1
-r-dt(config-port)#service-instance ge1/vlan110             			Создаем сабинтерфейс с именем ge1/vlan110 (имя произвольное) 
-r-dt(config-service-instance)#encapsulation dot1q 110 exact			Указываем номер обрабатываемого VLAN
-r-dt(config-service-instance)#rewrite pop 1							         Снимаем метку VLAN, чтобы передать кадр на L3 интерфейс
-r-dt(config-service-instance)#connect ip interface v110			  	Указание в какой интерфейс нужно отправить обработанные кадры.
-r-dt(config-service-instance)#exit
-r-dt(config-port)#service-instance ge1/vlan330
-r-dt(config-service-instance)#encapsulation dot1q 330 exact
-r-dt(config-service-instance)#rewrite pop 1
-r-dt(config-service-instance)#connect ip interface v330
-r-dt(config-service-instance)#exit
-r-dt(config-port)#exit
+r(config)#port ge1
+r(config-port)#service-instance ge1/vlan110             			Создаем сабинтерфейс с именем ge1/vlan110 (имя произвольное) 
+r(config-service-instance)#encapsulation dot1q 110 exact			Указываем номер обрабатываемого VLAN
+r(config-service-instance)#rewrite pop 1							         Снимаем метку VLAN, чтобы передать кадр на L3 интерфейс
+r(config-service-instance)#connect ip interface v110			  	Указание в какой интерфейс нужно отправить обработанные кадры.
+r(config-service-instance)#exit
+r(config-port)#service-instance ge1/vlan330
+r(config-service-instance)#encapsulation dot1q 330 exact
+r(config-service-instance)#rewrite pop 1
+r(config-service-instance)#connect ip interface v330
+r(config-service-instance)#exit
+r(config-port)#exit
 
 
 #Настройка динамической трансляции адресов
-r-dt(config)#interface v110
-r-dt(config-if)#ip nat inside					                            Помечаем интерфейс как внутренний
-r-dt(config-if)#exit
-r-dt(config)#interface v330
-r-dt(config-if)#ip nat inside
-r-dt(config-if)#exit
+r(config)#interface v110
+r(config-if)#ip nat inside					                            Помечаем интерфейс как внутренний
+r(config-if)#exit
+r(config)#interface v330
+r(config-if)#ip nat inside
+r(config-if)#exit
 
-r-dt(config)#interface ISP			
-r-dt(config-if)#ip nat outside				                          	Помечаем интерфейс как внешний
-r-dt(config-if)#exit
+r(config)#interface ISP			
+r(config-if)#ip nat outside				                          	Помечаем интерфейс как внешний
+r(config-if)#exit
 
 r-dt(config)#ip nat pool NAT 192.168.33.1-192.168.33.254  					          Создаем пул адресов с именем NAT
 r-dt(config)#ip nat source dynamic inside pool NAT overload 172.16.4.14		    Создаем динамические трансляции много-в-один для пакетов из внутренней сети, source IP которых будет попадать в диапазон адресов, определяемый пулом.
