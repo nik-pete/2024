@@ -1,35 +1,11 @@
 #############################################
 # доменное имя
 ####Linux:
-hostnamectl set-hostname ИМЯ.ДОМЕН
-
-
-
-
-
-
-
-
-
+hostnamectl set-hostname ИМЯ.ДОМен
 
 #########################################################################
 #ESR
-r#show interface status
-#Uplink
-r#configure
-r(config)#interface gi1/0/1
-r(config-if-gi)#ip address dhcp
-r(config-if-gi)#ip firewall disable
-r(config-if-gi)#no shutdown
-r(config-if-gi)#exit
-r(config)#interface gi1/0/2
-r(config-if-gi)#no shutdown
-r(config-if-gi)#exit
 
-r(config)#interface gi1/0/2.33
-r(config-if-gi)#ip address 192.168.2.1/29
-r(config-if-gi)#ip firewall disable
-r(config-if-gi)#exit
 
 #Настройка динамической трансляции адресов
 
@@ -55,13 +31,7 @@ r#save
 
 #########################################################################################
 ############tunnel
-#Ecorouter
-r(config)#interface tunnel.<НОМЕР>										                  	Создание интерфейса туннеля, где номер произвольное число, например, для R-DT interface tunnel.1
-r(config-if-tunnel)#ip add <IP АДРЕС ТУННЕЛЯ>								            Назначение ip адреса, например, для R-DT ip add 10.10.10.1/30
-r(config-if-tunnel)#ip mtu <ЗНАЧЕНИЕ>									                	Задание значения mtu для интерфейса, например, для R-DT  ip mtu 1400
-r(config-if-tunnel)#ip tunnel <source IP> <destination IP> mode gre			Задание IP-адресов начала и конца туннеля и типа туннеля, например, для R-DT ip tunnel 172.16.4.14 172.16.6.2 mode gre
-r(config-if-tunnel)#exit
-r(config)#
+#
 
 #ESR
 r(config)#tunnel gre <НОМЕР>								                  	Создаём интерфейс gre, где номер произвольное число, например, для R-BR tunnel gre 1
@@ -76,60 +46,7 @@ r(config-gre)#exit
 r#show tunnel status
 
 
-
-##########OSPF
-#Ecorouter
-r(config)#router ospf 1
-r(config-router)#network 10.10.10.0/30 area 0.0.0.0
-r(config-router)#network 10.10.11.0/30 area 0.0.0.0
-r(config-router)#network 192.168.3.0/26 area 0.0.0.0
-r(config-router)#network 192.168.3.64/29 area 0.0.0.0
-r(config-router)#passive-interface default
-r(config-router)#no passive-interface tunnel.1
-r(config-router)#no passive-interface tunnel.2
-r(config-router)#exit
-r(config)#
-
-#ESR
-r(config)#router ospf 1
-r(config-ospf)#area 0.0.0.0
-r(config-ospf-area)#network 10.10.10.0/30
-r(config-ospf-area)#network 10.10.12.0/30
-r(config-ospf-area)#network 192.168.2.0/29
-r(config-ospf-area)#enable
-r(config-ospf-area)#exit
-r(config-ospf)#enable
-r(config-ospf)#exit
-r(config)#
-r(config-gre)#tunnel gre 1
-r(config-gre)#ip ospf instance 1
-r(config-gre)#ip ospf
-r(config-gre)#exit
-r(config)#
-r(config)#do commit
-r(config)#do confirm
-
-
-#####Настройка OSPF парольная защита
-#Ecorouter
-r(config)#interface tunnel.1
-r(config-if-tunnel)#ip ospf authentication
-r(config-if-tunnel)#ip ospf authentication-key P@ssw0rd 
-r(config-if-tunnel)#exit
-r(config)#
-
-#ESR
-r(config-gre)#tunnel gre 1
-r(config-gre)#ip ospf authentication key ascii-text P@ssw0rd 
-r(config-gre)#ip ospf authentication algorithm cleartext
-r(config-gre)#exit
-r(config)#
-r(config)#do commit
-r(config)#do confirm
-
-
 ###############################################################################
-
 
 
 #Настройка DHCP-Server на vESR
