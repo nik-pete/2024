@@ -1,20 +1,3 @@
-##############################
-##Red os
-
-nmtui
-Изменить подключение -> Добавить - > Vlan
-
-Имя профиля : vlan330
-Устройство : vlan330
-
-Родительский : ens6s18
-Идентификатор VLAN :330
-
-Адреса : 192,168,33,66/29
-шлюз : 192.168.33.65
-Серверы DNS 77.88.8.8
-
-OK
 
 
 Установка OpenvSwitch
@@ -87,25 +70,7 @@ ip route add default via <АДРЕС ШЛЮЗА>
 
   
 #########################################################################
-##Redos
-#Настройка OpenvSwitch с помощью NetworkManager
-
-nmcli c add type ovs-bridge conn.interface <ИМЯ SW> con-name <ИМЯ SW>
-nmcli c add type ovs-port conn.interface <ИМЯ SW> master <ИМЯ SW> con-name ovs-port- <ИМЯ SW>
-nmcli c add type ovs-interface slave-type ovs-port conn.interface <ИМЯ SW> master ovs-port- <ИМЯ SW> con-name ovs-if- <ИМЯ SW>
-
-nmcli c add type ovs-port conn.interface <ПОРТ> master <ИМЯ SW> ovs-port.trunks <VLAN1>,<VLAN2> con-name ovs-port-<ПОРТ>
-nmcli c add type ethernet conn.interface <ПОРТ> master ovs-port-<ПОРТ> con-name ovs-if-<ПОРТ>
-
-nmcli c add type ovs-port conn.interface <ПОРТ> master <ИМЯ SW> ovs-port.tag <НОМЕР VLAN> con-name ovs-port-<ПОРТ>
-nmcli c add type ethernet conn.interface <ПОРТ> master ovs-port-<ПОРТ> con-name ovs-if-<ПОРТ>
-
-nmcli c add type ovs-port conn.interface <ВИРТ ПОРТ> master <ИМЯ SW> ovs-port.tag <НОМЕР VLAN> con-name ovs-port-<ВИРТ ПОРТ>
-nmcli c add type ovs-interface slave-type ovs-port conn.interface <ВИРТ ПОРТ> master ovs-port-mgmt con-name ovs-if- <ВИРТ ПОРТ> ipv4.method static ipv4.address <IP АДРЕС ВИРТ ПОРТА> ipv4.gateway <АДРЕС ШЛЮЗА>
-
-https://blog.oddbit.com/post/2020-02-15-configuring-open-vswitch-with/
-
-
+#
 ########################################################################
 #altlicnus
 ##Настройка OpenvSwitch с помощью Etcnet (на примере SW1-HQ)
