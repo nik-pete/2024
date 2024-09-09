@@ -19,66 +19,7 @@ domain name ДОМЕН
 
 
 ###########################################################
-#Ecorouter
-#Uplink
-r#conf t
-r(config)#interface Uplink					    	            	Создаем интерфейс с именем ISP (имя произвольное)
-r(config-if)#ip address 172.200.40.102/28
-r(config-if)#no shutdown
-r(config-if)#exit
-
-r(config)#port ge0									                  	Заходим в режим настройки порта
-r(config-port)#service-instance Internet			  	    	Создаем сервисный интерфейс с именем Internet (имя произвольное) 
-r(config-port)#encapsulation untagged				         	Указываем что трафик не тегированный
-r(config-service-instance)#connect ip interface uplink		Указание в какой интерфейс нужно отправить обработанные кадры.r-dt(config-service-instance)#
-r(config-service-instance)#exit
-r(config-service-instance)#exit
-
-r-dt(config)#ip route 0.0.0.0/0 172.200.40.101
-
-
-#downlink
-r(config)#interface v11						                     Создаем интерфейс с именем v110 (имя произвольное)
-r(config-if)#ip address 192.168.3.1/26
-r(config-if)#no shutdown
-r(config-if)#exit
-r(config)#interface v33
-r(config-if)#ip address 192.168.3.65/29
-r(config-if)#no shutdown
-r(config-if)#exit
-
-
-r(config)#port ge1
-r(config-port)#service-instance ge1/vlan11             			Создаем сабинтерфейс с именем ge1/vlan110 (имя произвольное) 
-r(config-service-instance)#encapsulation dot1q 11 exact			Указываем номер обрабатываемого VLAN
-r(config-service-instance)#rewrite pop 1							         Снимаем метку VLAN, чтобы передать кадр на L3 интерфейс
-r(config-service-instance)#connect ip interface v11			  	Указание в какой интерфейс нужно отправить обработанные кадры.
-r(config-service-instance)#exit
-r(config-port)#service-instance ge1/vlan33
-r(config-service-instance)#encapsulation dot1q 33 exact
-r(config-service-instance)#rewrite pop 1
-r(config-service-instance)#connect ip interface v33
-r(config-service-instance)#exit
-r(config-port)#exit
-
-
-#Настройка динамической трансляции адресов
-r(config)#interface v11
-r(config-if)#ip nat inside					                            Помечаем интерфейс как внутренний
-r(config-if)#exit
-r(config)#interface v33
-r(config-if)#ip nat inside
-r(config-if)#exit
-
-r(config)#interface Uplink			
-r(config-if)#ip nat outside				                          	Помечаем интерфейс как внешний
-r(config-if)#exit
-
-r(config)#ip nat pool NAT 192.168.3.1-192.168.3.254  					          Создаем пул адресов с именем NAT
-r(config)#ip nat source dynamic inside pool NAT overload 172.16.4.14		    Создаем динамические трансляции много-в-один для пакетов из внутренней сети, source IP которых будет попадать в диапазон адресов, определяемый пулом.
-
-r(config)#exit
-r#write
+#
 
 
 
@@ -201,21 +142,7 @@ r(config)#do confirm
 
 
 ###############################################################################
-###########Настройка протокола динамической конфигурации хостов
-#Настройка DHCP-Server на EcoRouter
-r(config)#ip pool <ИМЯ ПУЛА> <НАЧАЛЬНЫЙ АДРЕС> - <КОНЕЧНЫЙ АДРЕС>		Задаём POOL адресов с именем <ИМЯ ПУЛА> и задаём диапазон адресов, который будет раздаваться DHCP сервером
-r(config)#dhcp-server <НОМЕР>										                  	Входим в режим конфигурации DHCP сервера, где <НОМЕР> – номер сервера в системе маршрутизатора
-r(config-dhcp-server)#pool <ИМЯ ПУЛА> <НОМЕР> 						          	Привязываем ранее созданный POOL раздаваемых адресов с именем <ИМЯ ПУЛА> с указанием номера сервера в системе маршрутизатора <НОМЕР>
-r(config-dhcp-server-pool)#gateway <АДРЕС ШЛЮЗА>						        	gateway <АДРЕС ШЛЮЗА>
-r(config-dhcp-server-pool)#domain-name <ДОМЕННОЕ ИМЯ>				      	Определяем параметра DHCP 15 (доменное имя)
-r(config-dhcp-server-pool)#dns <АДРЕС DNS СЕРВЕРА>						        Определяем параметра DHCP 6 (список DNS-серверов)
-r(config-dhcp-server-pool)#exit
-r(config-dhcp-server)#exit
-r(config)#
-r(config)#interface <ИМЯ ИНТЕРФЕЙСА>										               Указываем, на каком интерфейсе маршрутизатор будет принимать пакеты DHCP Discover и отвечать на них предложением с IP-настройками
-r(config-if)#dhcp-server <НОМЕР>
-r(config-if)#exit
-r(config)#
+
 
 
 #Настройка DHCP-Server на vESR
