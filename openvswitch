@@ -1,52 +1,5 @@
 
 
-Установка OpenvSwitch
-
-dnf install openvswitch
-dnf install NetworkManager-ovs
-
-
-Удаляем временный интерфейс (в нашем случае vlan330)
-
-nmtui
-Изменить подключение -> Удалить - >vlan330
-
-
-####################################
-##altlinux
-
-mkdir /etc/net/ifaces/enp6s18.330
-vim /etc/net/ifaces/enp6s18.330/options
-
-TYPE=vlan
-HOST=enp6s18
-VID=330
-BOOTPROTO=static
-
-echo 192.168.11.82/29 > /etc/net/ifaces/enp6s18.330/ipv4address 
-echo default via 192.168.11.81 > /etc/net/ifaces/enp6s18.330/ipv4route
-echo nameserver 77.88.8.8 > /etc/net/ifaces/enp6s18.330/resolv.conf
-
-systemctl restart network
-
-
-
-#Обновляем репозитории
-
-apt-get update
-
-#Устанавливаем и настраиваем openvswitch
-
-apt-get install openvswitch
-
-#Удаляем временный интерфейс
-
-rm -rf /etc/net/iface/enp6s18.330
-reboot
-
-systemctl enable --now openvswitch
-systemctl status openvswitch
-
 #########################################################################################################################################################
 
 #openvstitch
