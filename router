@@ -59,9 +59,132 @@ r(config-dhcp-server)#domain-name "<ДОМЕННОЕ ИМЯ>"						             
 r(config-dhcp-server)#dns-server <АДРЕС DNS 1>, <АДРЕС DNS 2>			        	Определяем параметра DHCP 6 (список DNS-серверов)
 r(config-dhcp-server)#exit
 
-r(config)#ip dhcp-server														Включаем DHCP-сервер
+r(config)#ip dhcp-server		Включаем DHCP-сервер
 
 
+provider "your-cloud-provider" {
+  # Настройки для вашего облачного провайдера
+}
+
+# Создание сетевой инфраструктуры
+resource "your_cloud_network" "network_GZ1" {
+  name = "network_GZ1"
+  # Дополнительные параметры сети
+}
+
+resource "your_cloud_network" "network_ME1" {
+  name = "network_ME1"
+  # Дополнительные параметры сети
+}
+
+resource "your_cloud_network" "network_MS1" {
+  name = "network_MS1"
+  # Дополнительные параметры сети
+}
+
+# Создание виртуальных машин
+resource "your_cloud_instance" "Web1" {
+  name                = "Web1"
+  image               = "Alt P10 StarterKit"
+  vcpu                = 1
+  memory              = 1024
+  disk{
+    size             = 10
+    type             = "HDD"
+  }
+  availability_zone   = "GZ1"
+  network_interface {
+    network_id      = your_cloud_network.network_GZ1.id
+  }
+}
+
+resource "your_cloud_instance" "Web2" {
+  name                = "Web2"
+  image               = "Alt P10 StarterKit"
+  vcpu                = 1
+  memory              = 1024
+  disk {
+    size             = 10
+    type             = "HDD"
+  }
+  availability_zone   = "ME1"
+  network_interface {
+    network_id      = your_cloud_network.network_ME1.id
+  }
+}
+
+resource "your_cloud_instance" "WebAdm" {
+  name                = "WebAdm"
+  image               = "Alt P10 StarterKit"
+  vcpu                = 1
+  memory              = 1024
+  disk {
+    size             = 10
+    type             = "HDD"
+  }
+  availability_zone   = "MS1"
+  network_interface {
+    network_id      = your_cloud_network.network_MS1.id
+  }
+}
+
+resource "your_cloud_load_balancer" "lb" {
+  name                = "LoadBalancer"
+  availability_zone   = "MS1"
+  backend {
+    target_group = your_cloud_instance.Web1.id
+    target_group = your_cloud_instance.Web2.id
+  }
+}
+
+# Настройка безопасности
+resource "your_cloud_security_group" "allow_ssh_icmp" {
+  name        = "allow_ssh_icmp"
+
+  # Разрешаем SSH и ICMP
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["ВАШ_СОТРУДНИК_IP/32"] # Измените на свои IP
+  }
+
+  ingress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# Применение сети к виртуальным машинам
+resource "your_cloud_instance_security_group_attachment" "attach_web1" {
+  instance_id = your_cloud_instance.Web1.id
+  security_group_id = your_cloud_security_group.allow_ssh_icmp.id
+}
+
+resource "your_cloud_instance_security_group_attachment" "attach_web2" {
+  instance_id = your_cloud_instance.Web2.id
+  security_group_id = your_cloud_security_group.allow_ssh_icmp.id
+}
+
+resource "your_cloud_instance_security_group_attachment" "attach_webadm" {
+  instance_id = your_cloud_instance.WebAdm.id
+  security_group_id = your_cloud_security_group.allow_ssh_icmp.id
+}
+
+# Вывод внешних IP-адресов
+output "web1_ip" {
+  value = your_cloud_instance.Web1.public_ip
+}
+
+output "web2_ip" {
+  value = your_cloud_instance.Web2.public_ip
+}
+
+output "webadm_ip" {
+  value = your_cloud_instance.WebAdm.public_ip
+}
 
 
 
